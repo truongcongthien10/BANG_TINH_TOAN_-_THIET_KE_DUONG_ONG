@@ -139,7 +139,7 @@
             </div>
             <div class="details-item">
                 <span class="details-label">Lưu lượng ngày đêm (Q<sub>ngđ</sub>):</span>
-                <span class="details-val" id="res_qday">2.121 m³/ngđ</span>
+                <span class="details-val" id="res_qday">320.88 m³/ngđ</span>
             </div>
             <div class="details-item">
                 <span class="details-label">Vận tốc dòng chảy thực tế (v<sub>thực</sub>):</span>
@@ -161,7 +161,7 @@
 
     </div>
 
-    <!-- FOOTER CHUẨN DƯỚI BÊN TRÁI -->
+    <!-- FOOTER -->
     <div class="footer">
         <div class="footer-dept">Copyright © <span class="highlight">PHÒNG KỸ THUẬT - HueWACO</span></div>
     </div>
@@ -182,14 +182,13 @@
         steel: 130
     };
 
-    // Hàm lấy giới hạn tổn thất đơn vị tối đa (m/km) theo đường kính DN
     function getMaxIAllowed(dn) {
         if (dn >= 300) {
-            return 10.0; // DN >= 300: i <= 10 m/km
+            return 10.0;
         } else if (dn >= 150) {
-            return 7.0;  // 150 <= DN < 300: i <= 5 - 7 m/km (lấy trần 7.0 m/km)
+            return 7.0;
         } else {
-            return 5.0;  // DN < 150 (bao gồm < 100): i <= 5 m/km
+            return 5.0;
         }
     }
 
@@ -207,9 +206,8 @@
 
         const C = HW_C_VALUES[matKey];
         const deltaP_bar = p1 - p2; 
-        const hf_available = deltaP_bar * 10.1972; // bar -> mH2O
+        const hf_available = deltaP_bar * 10.1972;
 
-        // Tính đường kính D lý thuyết từ lưu lượng v_select và tổn thất có sẵn
         const term1 = 10.67 * L;
         const term2 = Math.pow(v_select * Math.PI / 4, 1.852);
         const term3 = hf_available * Math.pow(C, 1.852);
@@ -218,16 +216,13 @@
         const D_m = Math.pow(D_m_pow, 1 / 0.834);
         const D_calc_mm = D_m * 1000;
 
-        // Lưu lượng Q tương ứng
         const Q_m3s = v_select * (Math.PI * Math.pow(D_m, 2)) / 4.0;
         const Q_m3h = Q_m3s * 3600;
-        const Q_m3day = Q_m3h * 24;
+        const Q_m3day = Q_m3h * 24; // Tính chính xác Q ngày đêm (m3/ngđ)
 
-        // Tìm DN tối ưu thỏa mãn cả dải DN lẫn giới hạn tổn thất đơn vị (i_max)
         const dnList = STANDARD_DN[matKey];
         let chosenDN = dnList[dnList.length - 1];
 
-        // Bước 1: Lấy DN tối thiểu từ D_calc
         let startIndex = 0;
         for (let i = 0; i < dnList.length; i++) {
             if (dnList[i] >= D_calc_mm) {
@@ -236,7 +231,6 @@
             }
         }
 
-        // Bước 2: Kiểm tra và tự động nâng cấp DN nếu Hf/L vượt tiêu chuẩn cho phép
         let hf_actual = 0;
         let v_actual = 0;
         let i_actual_m_km = 0;
@@ -250,21 +244,22 @@
             v_actual = Q_m3s / Area;
             hf_actual = (10.67 * L * Math.pow(Q_m3s, 1.852)) / (Math.pow(C, 1.852) * Math.pow(D_chosen_m, 4.87));
             
-            i_actual_m_km = (hf_actual / L) * 1000.0; // Đổi sang m/km
+            i_actual_m_km = (hf_actual / L) * 1000.0;
             max_i_allowed = getMaxIAllowed(candidateDN);
 
             chosenDN = candidateDN;
-            // Nếu tổn thất i đạt tiêu chuẩn cho phép thì dừng lại chọn cỡ ống này
             if (i_actual_m_km <= max_i_allowed) {
                 break;
             }
         }
 
-        // Cập nhật kết quả hiển thị
         document.getElementById('res_dn').innerText = `DN${chosenDN} (${chosenDN} mm)`;
         document.getElementById('res_d_calc').innerText = D_calc_mm.toFixed(1);
         document.getElementById('res_qh').innerText = `${Q_m3h.toFixed(2)} m³/h`;
-        document.getElementById('res_qday').innerText = `${(Q_m3day / 1000).toFixed(3)} m³/ngđ`;
+        
+        // Cập nhật kết quả chính xác không chia 1000
+        document.getElementById('res_qday').innerText = `${Q_m3day.toFixed(2)} m³/ngđ`;
+        
         document.getElementById('res_v_actual').innerText = `${v_actual.toFixed(2)} m/s`;
         document.getElementById('res_hf').innerText = `${hf_actual.toFixed(2)} m`;
         document.getElementById('res_i_val').innerText = `${i_actual_m_km.toFixed(2)} m/km (Tối đa cho phép: ${max_i_allowed.toFixed(1)} m/km)`;
