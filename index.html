@@ -21,7 +21,7 @@
         .container { max-width: 680px; margin: 0 auto; background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid var(--border-color); }
         
         .header-bar { background: var(--excel-green); color: #fff; text-align: center; padding: 14px; font-size: 1.15rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-        .content { padding: 15px 20px; }
+        .content { padding: 15px 20px 20px 20px; }
 
         .section-title { background: var(--section-bg); color: var(--excel-green-dark); padding: 8px 12px; font-weight: bold; font-size: 0.95rem; border-left: 4px solid var(--excel-green); border-radius: 2px; margin-bottom: 12px; }
 
@@ -32,8 +32,24 @@
         .form-group.full-width { grid-column: 1 / -1; }
         
         label { font-size: 0.85rem; margin-bottom: 5px; font-weight: 600; color: #333; }
-        input, select { padding: 8px 10px; border: 1px solid var(--border-color); background: #fdfdfd; border-radius: 4px; font-size: 0.95rem; outline: none; height: 38px; width: 100%; }
-        input:focus, select:focus { border-color: var(--excel-green); box-shadow: 0 0 0 2px rgba(16, 124, 65, 0.15); }
+        
+        /* Hiệu ứng màu vàng nhạt khi focus vào ô nhập liệu/lựa chọn */
+        input, select { 
+            padding: 8px 10px; 
+            border: 1px solid var(--border-color); 
+            background: #fdfdfd; 
+            border-radius: 4px; 
+            font-size: 0.95rem; 
+            outline: none; 
+            height: 38px; 
+            width: 100%; 
+            transition: all 0.2s ease;
+        }
+        input:focus, select:focus { 
+            background-color: #fff9c4 !important; 
+            border-color: #d97706 !important; 
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.2); 
+        }
 
         .btn-calc { width: 100%; background: var(--accent-blue); color: white; border: none; padding: 12px; font-size: 1rem; font-weight: bold; border-radius: 5px; cursor: pointer; margin-bottom: 20px; transition: background 0.2s; }
         .btn-calc:hover { background: #0052a3; }
@@ -50,6 +66,24 @@
         .details-item:last-child { border-bottom: none; }
         .details-label { color: #444; }
         .details-val { font-weight: bold; color: var(--excel-green-dark); }
+
+        /* Style Footer bản quyền góc dưới bên trái */
+        .footer {
+            padding: 12px 20px;
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        .footer-dept {
+            font-size: 13px;
+            color: #3b5998;
+            font-weight: normal;
+        }
+
+        .footer-dept span.highlight {
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -63,24 +97,24 @@
         <div class="form-grid">
             <div class="form-group">
                 <label for="p1">Áp lực đầu P₁ (bar):</label>
-                <input type="number" id="p1" value="3" step="0.1" min="0">
+                <input type="number" id="p1" value="3" step="0.1" min="0" onfocus="this.select()">
             </div>
             <div class="form-group">
                 <label for="p2">Áp lực cuối P₂ (bar):</label>
-                <input type="number" id="p2" value="2.0" step="0.1" min="0">
+                <input type="number" id="p2" value="2.0" step="0.1" min="0" onfocus="this.select()">
             </div>
             <div class="form-group">
                 <label for="length">Chiều dài tuyến L (m):</label>
-                <input type="number" id="length" value="1000" min="1">
+                <input type="number" id="length" value="1000" min="1" onfocus="this.select()">
             </div>
             <div class="form-group">
                 <label for="v_select">Vận tốc chọn v (m/s) [≤ 2.0]:</label>
-                <input type="number" id="v_select" value="1.2" step="0.1" max="3.0" min="0.1">
+                <input type="number" id="v_select" value="1.2" step="0.1" max="3.0" min="0.1" onfocus="this.select()">
             </div>
             <div class="form-group full-width">
                 <label for="material">Vật liệu ống (Hệ số nhám C):</label>
-                <select id="material">
-                    <option value="hdpe">Ống nhựa HDPE / uPVC / PPR (C = 150)</option>
+                <select id="material" onfocus="this.select()">
+                    <option value="hdpe">Ống nhựa HDPE / uPVC / PPR / INOX (C = 140)</option>
                     <option value="ductile" selected>Gang dẻo mới (C = 130)</option>
                     <option value="ductile_old">Gang dẻo cũ (C = 100)</option>
                     <option value="steel">Ống Thép mới (C = 130)</option>
@@ -119,24 +153,25 @@
         </div>
 
     </div>
+
+    <!-- FOOTER CHUẨN DƯỚI BÊN TRÁI -->
+    <div class="footer">
+        <div class="footer-dept">Copyright © <span class="highlight">PHÒNG KỸ THUẬT - HueWACO</span></div>
+    </div>
 </div>
 
 <script>
     // Danh sách đường kính tiêu chuẩn DN (mm) riêng cho từng loại vật liệu ống
     const STANDARD_DN = {
-        // Gang dẻo: Không có DN160 (Sau DN150 là nhảy lên DN200)
         ductile: [80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200],
         ductile_old: [80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200],
-        
-        // Nhựa (HDPE, uPVC): Có DN160, DN225
         hdpe: [63, 75, 90, 110, 140, 160, 200, 225, 250, 280, 315, 355, 400, 450, 500, 630],
-        
-        // Thép cấp nước
         steel: [50, 65, 80, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500, 600]
     };
 
+    // Đã chỉnh sửa hệ số C cho HDPE/uPVC/PPR/INOX = 140
     const HW_C_VALUES = {
-        hdpe: 150,
+        hdpe: 140,
         ductile: 130,
         ductile_old: 100,
         steel: 130
@@ -158,11 +193,6 @@
         const deltaP_bar = p1 - p2; 
         const hf_available = deltaP_bar * 10.1972; // bar -> mH2O
 
-        // Phương trình Hazen-Williams
-        // hf = 10.67 * L * Q^1.852 / (C^1.852 * D^4.87)
-        // Kết hợp với Q = v * (pi * D^2 / 4)
-        // => D^0.834 = (10.67 * L * (v * pi / 4)^1.852) / (hf * C^1.852)
-        
         const term1 = 10.67 * L;
         const term2 = Math.pow(v_select * Math.PI / 4, 1.852);
         const term3 = hf_available * Math.pow(C, 1.852);
@@ -171,9 +201,8 @@
         const D_m = Math.pow(D_m_pow, 1 / 0.834);
         const D_calc_mm = D_m * 1000;
 
-        // Chọn DN chuẩn phù hợp nhất từ mảng tương ứng
         const dnList = STANDARD_DN[matKey];
-        let chosenDN = dnList[dnList.length - 1]; // Mặc định cỡ lớn nhất nếu vượt quá
+        let chosenDN = dnList[dnList.length - 1];
 
         for (let i = 0; i < dnList.length; i++) {
             if (dnList[i] >= D_calc_mm) {
@@ -182,22 +211,16 @@
             }
         }
 
-        // Tính ngược lại các thông số thực tế theo chosenDN
         const D_chosen_m = chosenDN / 1000.0;
         const Area = (Math.PI * Math.pow(D_chosen_m, 2)) / 4.0;
         
-        // Lưu lượng Q (m3/s) dựa trên vận tốc chọn
         const Q_m3s = v_select * (Math.PI * Math.pow(D_m, 2)) / 4.0;
         const Q_m3h = Q_m3s * 3600;
         const Q_m3day = Q_m3h * 24;
 
-        // Vận tốc thực tế với DN đã chọn
         const v_actual = Q_m3s / Area;
-
-        // Tổn thất thực tế Hf
         const hf_actual = (10.67 * L * Math.pow(Q_m3s, 1.852)) / (Math.pow(C, 1.852) * Math.pow(D_chosen_m, 4.87));
 
-        // Cập nhật giao diện
         document.getElementById('res_dn').innerText = `DN${chosenDN} (${chosenDN} mm)`;
         document.getElementById('res_d_calc').innerText = D_calc_mm.toFixed(1);
         document.getElementById('res_qh').innerText = `${Q_m3h.toFixed(2)} m³/h`;
@@ -206,7 +229,6 @@
         document.getElementById('res_hf').innerText = `${hf_actual.toFixed(2)} m`;
     }
 
-    // Chạy tính toán lần đầu khi tải trang
     window.onload = calculatePipe;
 </script>
 </body>
