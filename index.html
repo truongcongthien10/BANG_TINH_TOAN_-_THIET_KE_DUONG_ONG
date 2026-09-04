@@ -113,8 +113,8 @@
             <div class="form-group full-width">
                 <label for="material">Vật liệu ống (Hệ số nhám C):</label>
                 <select id="material" onfocus="this.select()">
-                    <option value="hdpe">Ống nhựa HDPE / uPVC / PPR / INOX (C = 140)</option>
-                    <option value="ductile" selected>Gang dẻo mới (C = 130)</option>
+                    <option value="hdpe" selected>Ống nhựa HDPE / uPVC / PPR / INOX (C = 140)</option>
+                    <option value="ductile">Gang dẻo mới (C = 130)</option>
                     <option value="ductile_old">Gang dẻo cũ (C = 100)</option>
                     <option value="steel">Ống Thép mới (C = 130)</option>
                 </select>
@@ -128,30 +128,30 @@
         
         <div class="result-box">
             <div class="result-title">ĐƯỜNG KÍNH TIÊU CHUẨN ĐỀ XUẤT (D<sub>OPT</sub>)</div>
-            <div class="result-main"><span id="res_dn">DN80 (80 mm)</span></div>
-            <div class="result-sub">Tính toán lý thuyết: D<sub>tính</sub> = <span id="res_d_calc">74.0</span> mm</div>
+            <div class="result-main"><span id="res_dn">DN75 (75 mm)</span></div>
+            <div class="result-sub">Tính toán lý thuyết: D<sub>tính</sub> = <span id="res_d_calc">62.8</span> mm</div>
         </div>
 
         <div class="details-list">
             <div class="details-item">
                 <span class="details-label">Lưu lượng thiết kế quy đổi (Q<sub>h</sub>):</span>
-                <span class="details-val" id="res_qh">18.59 m³/h</span>
+                <span class="details-val" id="res_qh">13.37 m³/h</span>
             </div>
             <div class="details-item">
                 <span class="details-label">Lưu lượng ngày đêm (Q<sub>ngđ</sub>):</span>
-                <span class="details-val" id="res_qday">446.09 m³/ngđ</span>
+                <span class="details-val" id="res_qday">320.98 m³/ngđ</span>
             </div>
             <div class="details-item">
                 <span class="details-label">Vận tốc dòng chảy thực tế (v<sub>thực</sub>):</span>
-                <span class="details-val" id="res_v_actual">1.03 m/s</span>
+                <span class="details-val" id="res_v_actual">0.84 m/s</span>
             </div>
             <div class="details-item">
                 <span class="details-label">Tổn thất cột áp đường ống (H<sub>f</sub>):</span>
-                <span class="details-val" id="res_hf">9.85 m</span>
+                <span class="details-val" id="res_hf">9.52 m</span>
             </div>
             <div class="details-item">
                 <span class="details-label">Độ dốc thủy lực thực tế (i):</span>
-                <span class="details-val" id="res_i_val">9.85 m/km</span>
+                <span class="details-val" id="res_i_val">9.52 m/km</span>
             </div>
             <div class="details-item">
                 <span class="details-label">Đánh giá tiêu chuẩn tổn thất áp lực:</span>
@@ -171,7 +171,7 @@
     const STANDARD_DN = {
         ductile: [50, 65, 80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200],
         ductile_old: [50, 65, 80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200],
-        hdpe: [63, 75, 90, 110, 140, 160, 200, 225, 250, 280, 315, 355, 400, 450, 500, 630],
+        hdpe: [50, 63, 75, 90, 110, 140, 160, 200, 225, 250, 280, 315, 355, 400, 450, 500, 630],
         steel: [50, 65, 80, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500, 600]
     };
 
@@ -188,7 +188,6 @@
         } else if (dn >= 150) {
             return 7.0;
         } else {
-            // Với các ống nhỏ hơn DN150, ưu tiên theo áp lực đầu vào có sẵn
             return Math.max(5.0, maxAvailableI);
         }
     }
@@ -207,8 +206,8 @@
 
         const C = HW_C_VALUES[matKey];
         const deltaP_bar = p1 - p2; 
-        const hf_available = deltaP_bar * 10.1972; // mH2O
-        const maxAvailableI = (hf_available / L) * 1000.0; // m/km
+        const hf_available = deltaP_bar * 10.1972; 
+        const maxAvailableI = (hf_available / L) * 1000.0; 
 
         const term1 = 10.67 * L;
         const term2 = Math.pow(v_select * Math.PI / 4, 1.852);
@@ -225,6 +224,7 @@
         const dnList = STANDARD_DN[matKey];
         let chosenDN = dnList[dnList.length - 1];
 
+        // Lựa chọn cỡ ống thương mại nhỏ nhất lớn hơn hoặc bằng D_calc
         let startIndex = 0;
         for (let i = 0; i < dnList.length; i++) {
             if (dnList[i] >= D_calc_mm) {
@@ -250,7 +250,7 @@
             max_i_allowed = getMaxIAllowed(candidateDN, maxAvailableI);
 
             chosenDN = candidateDN;
-            if (i_actual_m_km <= max_i_allowed) {
+            if (i_actual_m_km <= max_i_allowed && v_actual <= 2.0) {
                 break;
             }
         }
