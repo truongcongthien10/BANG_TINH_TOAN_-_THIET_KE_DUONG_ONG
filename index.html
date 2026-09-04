@@ -59,18 +59,19 @@
         .result-main span { background: #c8e6c9; padding: 2px 10px; border-radius: 4px; }
         .result-sub { font-size: 0.85rem; color: #555; }
 
-        .comp-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.85rem; }
-        .comp-table th, .comp-table td { border: 1px solid var(--border-color); padding: 8px; text-align: center; }
+        /* Bảng so sánh */
+        .comp-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 0.85rem; }
+        .comp-table th, .comp-table td { border: 1px solid var(--border-color); padding: 9px 8px; text-align: center; }
         .comp-table th { background: #f0f4f1; color: var(--excel-green-dark); font-weight: bold; }
-        .comp-table tr.highlight-row { background: #e8f5e9; font-weight: bold; }
+        
+        /* Highlight đậm cho D_tính (Màu cam nhạt/vàng nổi bật) */
+        .comp-table tr.row-calc { background: #fff3cd; font-weight: 600; color: #856404; }
+        
+        /* Highlight cho Cấp đề xuất (Màu xanh lá) */
+        .comp-table tr.row-opt { background: #d1e7dd; font-weight: bold; color: #0f5132; }
+        
         .status-ok { color: #16a34a; font-weight: bold; }
         .status-warn { color: #dc2626; font-weight: bold; }
-
-        .details-list { list-style: none; border-top: 1px solid var(--border-color); padding-top: 10px; }
-        .details-item { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.9rem; border-bottom: 1px dashed #eee; align-items: center; }
-        .details-item:last-child { border-bottom: none; }
-        .details-label { color: #444; }
-        .details-val { font-weight: bold; color: var(--excel-green-dark); }
 
         .footer { padding: 12px 20px; background-color: #ffffff; border-top: 1px solid #e2e8f0; text-align: left; }
         .footer-dept { font-size: 13px; color: #3b5998; font-weight: normal; }
@@ -115,7 +116,7 @@
 
         <button class="btn-calc" onclick="calculatePipe()">Tính Toán & Lập Bảng So Sánh</button>
 
-        <!-- II. ĐỀ XUẤT -->
+        <!-- II. KẾT QUẢ ĐỀ XUẤT -->
         <div class="section-title">II. KẾT QUẢ ĐỀ XUẤT TỐI ƯU</div>
         <div class="result-box">
             <div class="result-title">ĐƯỜNG KÍNH TIÊU CHUẨN ĐỀ XUẤT TỐI ƯU (D<sub>OPT</sub>)</div>
@@ -139,21 +140,6 @@
                 <!-- Dữ liệu JS tự động chèn -->
             </tbody>
         </table>
-
-        <div class="details-list">
-            <div class="details-item">
-                <span class="details-label">Lưu lượng thiết kế quy đổi (Q<sub>h</sub>):</span>
-                <span class="details-val" id="res_qh">13.37 m³/h</span>
-            </div>
-            <div class="details-item">
-                <span class="details-label">Lưu lượng ngày đêm (Q<sub>ngđ</sub>):</span>
-                <span class="details-val" id="res_qday">320.98 m³/ngđ</span>
-            </div>
-            <div class="details-item">
-                <span class="details-label">Chênh áp sẵn có tối đa (H<sub>f cho phép</sub>):</span>
-                <span class="details-val" id="res_hf_allow">10.20 m (10.20 m/km)</span>
-            </div>
-        </div>
 
     </div>
 
@@ -198,20 +184,16 @@
 
         // Lưu lượng cố định Q
         const Q_m3s = v_select * (Math.PI * Math.pow(D_m, 2)) / 4.0;
-        const Q_m3h = Q_m3s * 3600;
-        const Q_m3day = Q_m3h * 24;
 
-        // Danh sách kích thước đem đi kiểm tra: [D_calc, DN63, DN75, DN90]
+        // Danh sách cấp ống kiểm tra: [D_calc, DN63, DN75, DN90]
         const dnList = STANDARD_DN[matKey] || STANDARD_DN.hdpe;
-        
-        // Lấy các cấp ống thương mại tiếp theo tính từ D_calc
         let commercialOptions = dnList.filter(d => d >= Math.floor(D_calc_mm));
         if (commercialOptions.length < 3) {
             commercialOptions = [63, 75, 90];
         }
 
         const compareList = [
-            { name: `D_tính (${D_calc_mm.toFixed(1)} mm)`, d_mm: D_calc_mm }
+            { name: `D_tính (${D_calc_mm.toFixed(1)} mm)`, d_mm: D_calc_mm, isCalcRow: true }
         ];
 
         commercialOptions.slice(0, 3).forEach(dn => {
@@ -237,7 +219,6 @@
             calculatedList.push({ ...item, v, hf, i_val, isOk });
         });
 
-        // Nếu chưa tìm thấy cấp đạt (trường hợp cực đoan), lấy cấp cao nhất
         if (!optDN) {
             optDN = calculatedList[calculatedList.length - 1].dnVal || 90;
         }
@@ -245,8 +226,16 @@
         let tbodyHtml = '';
         calculatedList.forEach(item => {
             let isOpt = (item.dnVal === optDN);
+            let rowClass = '';
+            
+            if (item.isCalcRow) {
+                rowClass = 'row-calc'; // Highlight đậm màu vàng/cam cho D_tính
+            } else if (isOpt) {
+                rowClass = 'row-opt';  // Highlight xanh lá cho DN đề xuất
+            }
+
             tbodyHtml += `
-                <tr class="${isOpt ? 'highlight-row' : ''}">
+                <tr class="${rowClass}">
                     <td>${item.name} ${isOpt ? '⭐ (Đề xuất)' : ''}</td>
                     <td>${item.v.toFixed(2)} m/s</td>
                     <td>${item.hf.toFixed(2)} m</td>
@@ -256,13 +245,10 @@
             `;
         });
 
-        // Cập nhật lên giao diện
+        // Cập nhật giao diện
         document.getElementById('res_dn').innerText = `DN${optDN} (${optDN} mm)`;
         document.getElementById('res_d_calc').innerText = D_calc_mm.toFixed(1);
         document.getElementById('comp_tbody').innerHTML = tbodyHtml;
-        document.getElementById('res_qh').innerText = `${Q_m3h.toFixed(2)} m³/h`;
-        document.getElementById('res_qday').innerText = `${Q_m3day.toFixed(2)} m³/ngđ`;
-        document.getElementById('res_hf_allow').innerText = `${hf_available.toFixed(2)} m (${maxAvailableI.toFixed(2)} m/km)`;
     }
 
     window.onload = calculatePipe;
