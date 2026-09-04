@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tính Toán & Chọn Đường Kính Ống Tối Ưu</title>
+    <title>Tính Toán & So Sánh Chọn Đường Kính Ống Tối Ưu</title>
     <style>
         :root {
             --excel-green: #107c41;
@@ -18,7 +18,7 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: var(--bg-color); color: var(--text-color); padding: 15px; }
-        .container { max-width: 680px; margin: 0 auto; background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid var(--border-color); }
+        .container { max-width: 720px; margin: 0 auto; background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid var(--border-color); }
         
         .header-bar { background: var(--excel-green); color: #fff; text-align: center; padding: 14px; font-size: 1.15rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
         .content { padding: 15px 20px 20px 20px; }
@@ -59,36 +59,28 @@
         .result-main span { background: #c8e6c9; padding: 2px 10px; border-radius: 4px; }
         .result-sub { font-size: 0.85rem; color: #555; }
 
+        /* Bảng so sánh phương án */
+        .comp-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.85rem; }
+        .comp-table th, .comp-table td { border: 1px solid var(--border-color); padding: 8px; text-align: center; }
+        .comp-table th { background: #f0f4f1; color: var(--excel-green-dark); font-weight: bold; }
+        .comp-table tr.highlight-row { background: #e8f5e9; font-weight: bold; }
+        .status-ok { color: #16a34a; font-weight: bold; }
+
         .details-list { list-style: none; border-top: 1px solid var(--border-color); padding-top: 10px; }
         .details-item { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.9rem; border-bottom: 1px dashed #eee; align-items: center; }
         .details-item:last-child { border-bottom: none; }
         .details-label { color: #444; }
         .details-val { font-weight: bold; color: var(--excel-green-dark); }
-        .status-ok { color: #16a34a; font-weight: bold; }
-        .status-warn { color: #dc2626; font-weight: bold; }
 
-        .footer {
-            padding: 12px 20px;
-            background-color: #ffffff;
-            border-top: 1px solid #e2e8f0;
-            text-align: left;
-        }
-
-        .footer-dept {
-            font-size: 13px;
-            color: #3b5998;
-            font-weight: normal;
-        }
-
-        .footer-dept span.highlight {
-            font-weight: bold;
-        }
+        .footer { padding: 12px 20px; background-color: #ffffff; border-top: 1px solid #e2e8f0; text-align: left; }
+        .footer-dept { font-size: 13px; color: #3b5998; font-weight: normal; }
+        .footer-dept span.highlight { font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header-bar">TÍNH TOÁN & CHỌN ĐƯỜNG KÍNH ỐNG TỐI ƯU</div>
+    <div class="header-bar">TÍNH TOÁN & SO SÁNH ĐƯỜNG KÍNH ỐNG TỐI ƯU</div>
     <div class="content">
         
         <!-- I. THÔNG SỐ ĐẦU VÀO -->
@@ -121,16 +113,32 @@
             </div>
         </div>
 
-        <button class="btn-calc" onclick="calculatePipe()">Tính Toán & Chọn D Tối Ưu</button>
+        <button class="btn-calc" onclick="calculatePipe()">Tính Toán & Lập Bảng So Sánh</button>
 
-        <!-- II. KẾT QUẢ -->
-        <div class="section-title">II. KẾT QUẢ THIẾT KẾ TỐI ƯU</div>
-        
+        <!-- II. ĐỀ XUẤT -->
+        <div class="section-title">II. KẾT QUẢ ĐỀ XUẤT TỐI ƯU</div>
         <div class="result-box">
-            <div class="result-title">ĐƯỜNG KÍNH TIÊU CHUẨN ĐỀ XUẤT (D<sub>OPT</sub>)</div>
+            <div class="result-title">ĐƯỜNG KÍNH TIÊU CHUẨN ĐỀ XUẤT TỐI ƯU (D<sub>OPT</sub>)</div>
             <div class="result-main"><span id="res_dn">DN75 (75 mm)</span></div>
-            <div class="result-sub">Tính toán lý thuyết: D<sub>tính</sub> = <span id="res_d_calc">62.8</span> mm</div>
+            <div class="result-sub">Kích thước tính toán lý thuyết: D<sub>tính</sub> = <span id="res_d_calc">62.8</span> mm</div>
         </div>
+
+        <!-- III. BẢNG SO SÁNH PHƯƠNG ÁN -->
+        <div class="section-title">III. BẢNG SO SÁNH THÔNG SỐ CÁC CẤP ỐNG LẦN LƯỢT</div>
+        <table class="comp-table">
+            <thead>
+                <tr>
+                    <th>Cấp Đường Kính</th>
+                    <th>Vận tốc v (m/s)</th>
+                    <th>Tổn thất H<sub>f</sub> (m)</th>
+                    <th>Độ dốc i (m/km)</th>
+                    <th>Đánh giá</th>
+                </tr>
+            </thead>
+            <tbody id="comp_tbody">
+                <!-- Dữ liệu JS tự động chèn -->
+            </tbody>
+        </table>
 
         <div class="details-list">
             <div class="details-item">
@@ -142,20 +150,8 @@
                 <span class="details-val" id="res_qday">320.88 m³/ngđ</span>
             </div>
             <div class="details-item">
-                <span class="details-label">Vận tốc dòng chảy thực tế (v<sub>thực</sub>):</span>
-                <span class="details-val" id="res_v_actual">0.84 m/s</span>
-            </div>
-            <div class="details-item">
-                <span class="details-label">Tổn thất cột áp đường ống (H<sub>f</sub>):</span>
-                <span class="details-val" id="res_hf">9.52 m</span>
-            </div>
-            <div class="details-item">
-                <span class="details-label">Độ dốc thủy lực thực tế (i):</span>
-                <span class="details-val" id="res_i_val">9.52 m/km</span>
-            </div>
-            <div class="details-item">
-                <span class="details-label">Đánh giá tiêu chuẩn tổn thất áp lực:</span>
-                <span class="details-val" id="res_status">Đạt tiêu chuẩn</span>
+                <span class="details-label">Chênh áp sẵn có tối đa (H<sub>f cho phép</sub>):</span>
+                <span class="details-val" id="res_hf_allow">10.20 m</span>
             </div>
         </div>
 
@@ -169,28 +165,12 @@
 
 <script>
     const STANDARD_DN = {
-        ductile: [50, 65, 80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200],
-        ductile_old: [50, 65, 80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200],
-        hdpe: [50, 63, 75, 90, 110, 140, 160, 200, 225, 250, 280, 315, 355, 400, 450, 500, 630],
-        steel: [50, 65, 80, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500, 600]
+        ductile: [50, 65, 80, 100, 150, 200, 250, 300],
+        hdpe: [50, 63, 75, 90, 110, 140, 160, 200],
+        steel: [50, 65, 80, 100, 125, 150, 200]
     };
 
-    const HW_C_VALUES = {
-        hdpe: 140,
-        ductile: 130,
-        ductile_old: 100,
-        steel: 130
-    };
-
-    function getMaxIAllowed(dn, maxAvailableI) {
-        if (dn >= 300) {
-            return 10.0;
-        } else if (dn >= 150) {
-            return 7.0;
-        } else {
-            return Math.max(5.0, maxAvailableI);
-        }
-    }
+    const HW_C_VALUES = { hdpe: 140, ductile: 130, ductile_old: 100, steel: 130 };
 
     function calculatePipe() {
         const p1 = parseFloat(document.getElementById('p1').value);
@@ -199,80 +179,70 @@
         const v_select = parseFloat(document.getElementById('v_select').value);
         const matKey = document.getElementById('material').value;
 
-        if (isNaN(p1) || isNaN(p2) || isNaN(L) || isNaN(v_select) || p1 <= p2 || v_select <= 0) {
-            alert('Vui lòng nhập đầy đủ thông số hợp lệ (P1 > P2, V > 0)!');
+        if (isNaN(p1) || isNaN(p2) || isNaN(L) || isNaN(v_select) || p1 <= p2) {
+            alert('Vui lòng nhập thông số hợp lệ!');
             return;
         }
 
-        const C = HW_C_VALUES[matKey];
+        const C = HW_C_VALUES[matKey] || 140;
         const deltaP_bar = p1 - p2; 
         const hf_available = deltaP_bar * 10.1972; 
         const maxAvailableI = (hf_available / L) * 1000.0; 
 
-        // Tính D lý thuyết dựa trên v chọn và hf có sẵn
+        // 1. Tính D lý thuyết (mm)
         const term1 = 10.67 * L;
         const term2 = Math.pow(v_select * Math.PI / 4, 1.852);
         const term3 = hf_available * Math.pow(C, 1.852);
-
-        const D_m_pow = (term1 * term2) / term3;
-        const D_m = Math.pow(D_m_pow, 1 / 0.834);
+        const D_m = Math.pow((term1 * term2) / term3, 1 / 0.834);
         const D_calc_mm = D_m * 1000;
 
-        // Lưu lượng cố định thiết kế dựa trên D_calc và v_select
+        // Lưu lượng thiết kế Q (m3/s)
         const Q_m3s = v_select * (Math.PI * Math.pow(D_m, 2)) / 4.0;
         const Q_m3h = Q_m3s * 3600;
         const Q_m3day = Q_m3h * 24;
 
-        const dnList = STANDARD_DN[matKey];
-        
-        // Tìm cỡ ống danh định đầu tiên lớn hơn D_calc
-        let startIndex = 0;
-        for (let i = 0; i < dnList.length; i++) {
-            if (dnList[i] > D_calc_mm) {
-                startIndex = i;
-                break;
-            }
-        }
+        // Danh sách kích thước cần tính toán so sánh: D_calc, và 2 cấp thương mại kế tiếp
+        const dnList = STANDARD_DN[matKey] || STANDARD_DN.hdpe;
+        let nextDN1 = dnList.find(d => d > D_calc_mm) || 75;
+        let nextDN2 = dnList[dnList.indexOf(nextDN1) + 1] || 90;
 
-        let chosenDN = dnList[startIndex];
-        let hf_actual = 0;
-        let v_actual = 0;
-        let i_actual_m_km = 0;
-        let max_i_allowed = 0;
+        const compareItems = [
+            { name: `D_tính (${D_calc_mm.toFixed(1)} mm)`, d_mm: D_calc_mm },
+            { name: `DN${nextDN1} (${nextDN1} mm)`, d_mm: nextDN1 },
+            { name: `DN${nextDN2} (${nextDN2} mm)`, d_mm: nextDN2 }
+        ];
 
-        for (let i = startIndex; i < dnList.length; i++) {
-            let candidateDN = dnList[i];
-            let D_chosen_m = candidateDN / 1000.0;
-            let Area = (Math.PI * Math.pow(D_chosen_m, 2)) / 4.0;
+        let tbodyHtml = '';
+        let optDN = nextDN1; // Mặc định đề xuất cấp thương mại nhỏ nhất đạt yêu cầu (DN75)
 
-            v_actual = Q_m3s / Area;
-            hf_actual = (10.67 * L * Math.pow(Q_m3s, 1.852)) / (Math.pow(C, 1.852) * Math.pow(D_chosen_m, 4.87));
-            
-            i_actual_m_km = (hf_actual / L) * 1000.0;
-            max_i_allowed = getMaxIAllowed(candidateDN, maxAvailableI);
+        compareItems.forEach((item, index) => {
+            let d_m = item.d_mm / 1000.0;
+            let area = (Math.PI * Math.pow(d_m, 2)) / 4.0;
+            let v = Q_m3s / area;
+            let hf = (10.67 * L * Math.pow(Q_m3s, 1.852)) / (Math.pow(C, 1.852) * Math.pow(d_m, 4.87));
+            let i_val = (hf / L) * 1000.0;
 
-            chosenDN = candidateDN;
-            if (i_actual_m_km <= max_i_allowed && v_actual <= 2.0) {
-                break;
-            }
-        }
+            let isOk = hf <= hf_available;
+            let isOpt = (item.d_mm === optDN);
 
-        document.getElementById('res_dn').innerText = `DN${chosenDN} (${chosenDN} mm)`;
+            tbodyHtml += `
+                <tr class="${isOpt ? 'highlight-row' : ''}">
+                    <td>${item.name} ${isOpt ? '⭐ (Đề xuất)' : ''}</td>
+                    <td>${v.toFixed(2)} m/s</td>
+                    <td>${hf.toFixed(2)} m</td>
+                    <td>${i_val.toFixed(2)} m/km</td>
+                    <td class="${isOk ? 'status-ok' : ''}">${isOk ? '✓ ĐẠT' : '⚠ VƯỢT ÁP'}</td>
+                </tr>
+            `;
+        });
+
+        // Cập nhật giao diện
+        document.getElementById('res_dn').innerText = `DN${optDN} (${optDN} mm)`;
         document.getElementById('res_d_calc').innerText = D_calc_mm.toFixed(1);
+        document.getElementById('comp_tbody').innerHTML = tbodyHtml;
         document.getElementById('res_qh').innerText = `${Q_m3h.toFixed(2)} m³/h`;
         document.getElementById('res_qday').innerText = `${Q_m3day.toFixed(2)} m³/ngđ`;
-        document.getElementById('res_v_actual').innerText = `${v_actual.toFixed(2)} m/s`;
-        document.getElementById('res_hf').innerText = `${hf_actual.toFixed(2)} m`;
-        document.getElementById('res_i_val').innerText = `${i_actual_m_km.toFixed(2)} m/km (Tối đa cho phép: ${max_i_allowed.toFixed(1)} m/km)`;
-
-        const statusEl = document.getElementById('res_status');
-        if (i_actual_m_km <= max_i_allowed) {
-            statusEl.innerText = `✓ ĐẠT (i = ${i_actual_m_km.toFixed(2)} ≤ ${max_i_allowed.toFixed(1)} m/km)`;
-            statusEl.className = "details-val status-ok";
-        } else {
-            statusEl.innerText = `⚠ CẢNH BÁO (i = ${i_actual_m_km.toFixed(2)} > ${max_i_allowed.toFixed(1)} m/km) - Cần tăng thêm cấp DN`;
-            statusEl.className = "details-val status-warn";
-        }
+        document.getElementById('res_hf_allow').innerText = `${hf_available.toFixed(2)} m (${maxAvailableI.toFixed(2)} m/km)`;
     }
 
     window.onload = calculatePipe;
