@@ -139,7 +139,7 @@
             </div>
             <div class="details-item">
                 <span class="details-label">Lưu lượng ngày đêm (Q<sub>ngđ</sub>):</span>
-                <span class="details-val" id="res_qday">320.98 m³/ngđ</span>
+                <span class="details-val" id="res_qday">320.88 m³/ngđ</span>
             </div>
             <div class="details-item">
                 <span class="details-label">Vận tốc dòng chảy thực tế (v<sub>thực</sub>):</span>
@@ -209,6 +209,7 @@
         const hf_available = deltaP_bar * 10.1972; 
         const maxAvailableI = (hf_available / L) * 1000.0; 
 
+        // Tính D lý thuyết dựa trên v chọn và hf có sẵn
         const term1 = 10.67 * L;
         const term2 = Math.pow(v_select * Math.PI / 4, 1.852);
         const term3 = hf_available * Math.pow(C, 1.852);
@@ -217,22 +218,23 @@
         const D_m = Math.pow(D_m_pow, 1 / 0.834);
         const D_calc_mm = D_m * 1000;
 
+        // Lưu lượng cố định thiết kế dựa trên D_calc và v_select
         const Q_m3s = v_select * (Math.PI * Math.pow(D_m, 2)) / 4.0;
         const Q_m3h = Q_m3s * 3600;
         const Q_m3day = Q_m3h * 24;
 
         const dnList = STANDARD_DN[matKey];
-        let chosenDN = dnList[dnList.length - 1];
-
-        // Lựa chọn cỡ ống thương mại nhỏ nhất lớn hơn hoặc bằng D_calc
+        
+        // Tìm cỡ ống danh định đầu tiên lớn hơn D_calc
         let startIndex = 0;
         for (let i = 0; i < dnList.length; i++) {
-            if (dnList[i] >= D_calc_mm) {
+            if (dnList[i] > D_calc_mm) {
                 startIndex = i;
                 break;
             }
         }
 
+        let chosenDN = dnList[startIndex];
         let hf_actual = 0;
         let v_actual = 0;
         let i_actual_m_km = 0;
