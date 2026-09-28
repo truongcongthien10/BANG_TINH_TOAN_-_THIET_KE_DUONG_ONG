@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tính Toán & lựa Chọn Đường Kính Ống Tối Ưu - HueWACO</title>
+    <title>Tính Toán & Lựa Chọn Đường Kính Ống Tối Ưu - HueWACO</title>
     <style>
         :root {
             --excel-green: #107c41;
@@ -104,10 +104,10 @@
                 <input type="number" id="v_select" value="1.2" step="0.1" max="3.0" min="0.1" onfocus="this.select()" onchange="calculatePipe()">
             </div>
             <div class="form-group full-width">
-                <label for="material">Vật liệu ống (Hệ số nhám C):</label>
+                <label for="material">Vật liệu ống (Theo quy chuẩn sử dụng HueWACO):</label>
                 <select id="material" onchange="calculatePipe()">
-                    <option value="hdpe" selected>Ống nhựa HDPE / uPVC / PPR / INOX (C = 140)</option>
-                    <option value="ductile">Gang dẻo mới (C = 130)</option>
+                    <option value="hdpe" selected>Ống nhựa HDPE (C = 140)</option>
+                    <option value="ductile">Ống Gang dẻo (C = 130)</option>
                     <option value="steel">Ống Thép mới (C = 120)</option>
                     <option value="ductile_old">Gang dẻo cũ / Thép cũ (C = 100)</option>
                 </select>
@@ -150,11 +150,12 @@
 </div>
 
 <script>
+    // CẬP NHẬT CHÍNH XÁC DANH MỤC ĐƯỜNG KÍNH THIẾT BỊ / TUYẾN ỐNG HUEWACO SỬ DỤNG
     const STANDARD_DN = {
-        hdpe: [50, 63, 75, 90, 110, 125, 140, 160, 180, 200, 225, 250, 280, 315, 355, 400],
-        ductile: [50, 65, 80, 100, 150, 200, 250, 300, 350, 400, 450, 500],
-        steel: [50, 65, 80, 100, 125, 150, 200, 250, 300, 350, 400],
-        ductile_old: [50, 65, 80, 100, 150, 200, 250, 300]
+        hdpe: [32, 40, 50, 63, 75, 90, 110, 160, 225, 280, 315, 355, 450, 630],
+        ductile: [80, 100, 150, 200, 250, 300, 350, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200],
+        steel: [80, 100, 150, 200, 250, 300, 350, 400, 500, 600, 700, 800, 900, 1000, 1200],
+        ductile_old: [80, 100, 150, 200, 250, 300, 350, 400, 500, 600]
     };
 
     const HW_C_VALUES = { hdpe: 140, ductile: 130, steel: 120, ductile_old: 100 };
@@ -174,20 +175,18 @@
         }
 
         const C = HW_C_VALUES[matKey] || 140;
-        const hf_available = (p1 - p2) * 10.0; // 1 bar = 10 mH2O chuẩn thủy lực
+        const hf_available = (p1 - p2) * 10.0; // 1 bar = 10 mH2O
 
-        // 1. Công thức Hazen-Williams SI gốc (11.737) suy ngược tính D lý thuyết (m)
-        // hf = (11.737 * L * (v * pi/4 * D^2)^1.852) / (C^1.852 * D^4.87)
-        // => D^1.166 = (11.737 * L * v^1.852 * (pi/4)^1.852) / (hf * C^1.852)
+        // Công thức Hazen-Williams suy ngược tính D lý thuyết (m)
         const num = 11.737 * L * Math.pow(v_select * (Math.PI / 4.0), 1.852);
         const den = hf_available * Math.pow(C, 1.852);
         const D_m = Math.pow(num / den, 1.0 / 1.166);
         const D_calc_mm = D_m * 1000.0;
 
-        // Lưu lượng thiết kế Q (m³/s) giữ cố định theo v_select và D_calc
+        // Lưu lượng thiết kế Q (m³/s)
         const Q_m3s = v_select * (Math.PI * Math.pow(D_m, 2)) / 4.0;
 
-        // Lấy danh sách thương mại phù hợp
+        // Lấy danh sách thương mại thuộc quy chuẩn HueWACO
         const dnList = STANDARD_DN[matKey] || STANDARD_DN.hdpe;
         let commercialOptions = dnList.filter(d => d >= Math.floor(D_calc_mm));
         if (commercialOptions.length < 3) {
@@ -204,7 +203,7 @@
             compareList.push({ name: `DN${dn} (${dn} mm)`, d_mm: dn, dnVal: dn });
         });
 
-        // Đánh giá các cấp ống với công thức 11.737
+        // Đánh giá từng cấp ống
         let optDN = null;
         let calculatedList = [];
 
